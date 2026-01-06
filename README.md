@@ -85,6 +85,9 @@ Le projet permet de visualiser en temps réel :
 2.  L'utilisation CPU et RAM des clients Linux et Windows.
 3.  Des alertes en cas de dépassement de seuils critiques.
 
+![Dashboard Zabbix](screens/dashboard_overview.png)
+
+
 ---
 
 ## ⚠️ Difficultés et Solutions
