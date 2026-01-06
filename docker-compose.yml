@@ -1,0 +1,104 @@
+version: '3.5'
+services:
+  zabbix-server:
+    image: zabbix/zabbix-server-mysql:ubuntu-7.0-latest
+    ports:
+      - "10051:10051"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./zbx_env/usr/lib/zabbix/alertscripts:/usr/lib/zabbix/alertscripts:ro
+      - ./zbx_env/usr/lib/zabbix/externalscripts:/usr/lib/zabbix/externalscripts:ro
+      - ./zbx_env/var/lib/zabbix/export:/var/lib/zabbix/export:rw
+      - ./zbx_env/var/lib/zabbix/modules:/var/lib/zabbix/modules:ro
+      - ./zbx_env/var/lib/zabbix/enc:/var/lib/zabbix/enc:ro
+      - ./zbx_env/var/lib/zabbix/ssh_keys:/var/lib/zabbix/ssh_keys:ro
+      - ./zbx_env/var/lib/zabbix/mibs:/var/lib/zabbix/mibs:ro
+      - snmptraps:/var/lib/zabbix/snmptraps:rw
+    ulimits:
+      nproc: 65535
+      nofile:
+        soft: 20000
+        hard: 40000
+    deploy:
+      resources:
+        limits:
+          cpus: '0.70'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+    env_file:
+      - .env_db_mysql
+      - .env_srv
+    depends_on:
+      - mysql-server
+    networks:
+      zbx_net_backend:
+        aliases:
+          - zabbix-server
+          - zabbix-server-mysql
+          - zabbix-server-ubuntu-mysql
+          - zabbix-server-mysql-ubuntu
+      zbx_net_frontend:
+
+  zabbix-web-nginx-mysql:
+    image: zabbix/zabbix-web-nginx-mysql:ubuntu-7.0-latest
+    ports:
+      - "80:8080"
+      - "443:8443"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./zbx_env/etc/ssl/nginx:/etc/ssl/nginx:ro
+      - ./zbx_env/usr/share/zabbix/modules:/usr/share/zabbix/modules:ro
+    deploy:
+      resources:
+        limits:
+          cpus: '0.70'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+    env_file:
+      - .env_db_mysql
+      - .env_web
+    depends_on:
+      - mysql-server
+      - zabbix-server
+    networks:
+      zbx_net_backend:
+        aliases:
+          - zabbix-web-nginx-mysql
+          - zabbix-web-nginx-ubuntu-mysql
+          - zabbix-web-nginx-mysql-ubuntu
+      zbx_net_frontend:
+
+  mysql-server:
+    image: mysql:8.0-oracle
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_bin
+      - --default-authentication-plugin=mysql_native_password
+    volumes:
+      - ./zbx_env/var/lib/mysql:/var/lib/mysql:rw
+    env_file:
+      - .env_db_mysql
+    networks:
+      zbx_net_backend:
+        aliases:
+          - mysql-server
+          - zabbix-database
+          - mysql-database
+
+networks:
+  zbx_net_frontend:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.16.238.0/24
+  zbx_net_backend:
+    driver: bridge
+    internal: true
+
+volumes:
+  snmptraps:
