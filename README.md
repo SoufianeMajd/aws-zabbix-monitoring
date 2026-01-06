@@ -42,13 +42,20 @@ cd aws-zabbix-monitoring
 
 ### Étape 2 : Lancement du Serveur Zabbix (Docker)
 Le déploiement utilise l'image officielle **Zabbix 7.0** via `docker-compose.yml`.
+
+![Conf Docker Compose](screens/docker_compose_file.png)
+
 ```bash
 docker-compose up -d
 ```
+![Lancement Docker](screens/docker_launch.png)
+
 Une fois lancé, l'interface est accessible via l'IP publique de l'instance :
 *   **URL** : `http://<IP_PUBLIQUE>`
 *   **User** : `Admin`
 *   **Password** : `zabbix` (par défaut)
+
+![Interface Web Zabbix](screens/zabbix_login.png)
 
 ### Étape 3 : Configuration de l'Agent Linux
 Sur l'instance client Ubuntu :
@@ -58,12 +65,16 @@ Sur l'instance client Ubuntu :
     Server=<IP_PRIVEE_SERVEUR_ZABBIX>
     ListenPort=10050
     ```
+    ![Conf Agent Linux](screens/linux_agent_config.png)
+
 3.  Redémarrer le service agent.
 
 ### Étape 4 : Configuration de l'Agent Windows
 Sur l'instance Windows Server :
 1.  Installer l'agent via l'installateur MSI officiel.
 2.  Configurer l'IP du serveur Zabbix lors de l'installation.
+    ![Setup Agent Windows](screens/windows_agent_setup.png)
+
 3.  **Important** : Ouvrir le port `10050` dans le pare-feu Windows Defender.
 
 ---
